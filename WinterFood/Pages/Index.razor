@@ -8,15 +8,99 @@
 <div class="container">
     <h1>Recipes</h1>
     <ul>
-        @foreach (var recipe in Recipes)
+        @if (Recipes.Count == 0)
         {
-            <li>@recipe.Name</li>
+            <li>No recipes found.</li>
         }
+        else
+        {
+            @foreach (var recipe in Recipes)
+            {
+                <li @onclick="(() => SetRecipeForUpdate(recipe))">@recipe.Name</li>
+                <li>@recipe.Description</li>
+                <li><button class="btn btn-danger" @onclick="(() => DeleteRecipe(recipe))">Delete!</button></li>
+            }
+        }    
     </ul>
+</div>
+<div class="container">
+    <h1>Add new recipe</h1>
+    <EditForm Model="@NewRecipe">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" class="form-control" id="name" @bind="@NewRecipe.Name" />
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <input type="text" class="form-control" id="description" @bind="@NewRecipe.Description" />
+        </div>
+        <div class="form-group">
+            <label for="instructions">Instructions</label>
+            <input type="text" class="form-control" id="instructions" @bind="@NewRecipe.Instructions" />
+        </div>
+        <div class="form-group">
+            <label for="image">Image</label>
+            <input type="text" class="form-control" id="image" @bind="@NewRecipe.ImageUrl" />
+        </div>
+        <div class="form-group">
+            <label for="servings">Servings</label>
+            <input type="text" class="form-control" id="servings" @bind="@NewRecipe.Servings" />
+        </div>
+        <div class="form-group">
+            <label for="prepTime">Prep Time</label>
+            <input type="text" class="form-control" id="prepTime" @bind="@NewRecipe.PrepTime" />
+        </div>
+        <div class="form-group">
+            <label for="cookTime">Cook Time</label>
+            <input type="text" class="form-control" id="cookTime" @bind="@NewRecipe.CookTime" />
+        </div>
+        <button class="btn btn-primary" @onclick="AddRecipe">Add</button>
+    </EditForm>
+</div>
+
+<div class="container">
+    <h1>Update recipe</h1>
+    <EditForm Model="@UpdateRecipe">
+        <div class="form-group">
+            <label for="name">Name</label>
+            <InputText class="form-control" id="name" @bind-Value="UpdateRecipe.Name" />
+        </div>
+        <div class="form-group">
+            <label for="description">Description</label>
+            <InputText class="form-control" id="description" @bind-Value="UpdateRecipe.Description" />
+        </div>
+        <div class="form-group">
+            <label for="instructions">Instructions</label>
+            <InputText class="form-control" id="instructions" @bind-Value="UpdateRecipe.Instructions" />
+        </div>
+        <div class="form-group">
+            <label for="image">Image</label>
+            <InputText class="form-control" id="image" @bind-Value="UpdateRecipe.ImageUrl" />
+        </div>
+        <div class="form-group">
+            <label for="servings">Servings</label>
+            <InputText class="form-control" id="servings" @bind-Value="updateServings" />
+        </div>
+        <div class="form-group">
+            <label for="prepTime">Prep Time</label>
+            <InputText class="form-control" id="prepTime" @bind-Value="UpdateRecipe.PrepTime" />
+        </div>
+        <div class="form-group">
+            <label for="cookTime">Cook Time</label>
+            <InputText class="form-control" id="cookTime" @bind-Value="UpdateRecipe.CookTime" />
+        </div>
+        <button class="btn btn-primary" @onclick="UpdateRecipeData">Update</button>
+    </EditForm>
 </div>
 
 @code {
+    // list of recipes
     List<Recipe> Recipes = new List<Recipe>();
+    // add new recipe
+    public Recipe NewRecipe { get; set; } = new Recipe();
+    // update recipe
+    Recipe UpdateRecipe = new Recipe();
+    private string? updateServings;
 
     protected override async Task OnInitializedAsync()
     {
@@ -27,5 +111,41 @@
     private async Task RefreshRecipes()
     {
         Recipes = await service.GetRecipesAsync();
+    }
+
+    private async Task AddRecipe()
+    {
+        await service.AddRecipeAsync(NewRecipe);
+        await RefreshRecipes();
+    }
+
+    private void SetRecipeForUpdate(Recipe recipe)
+    {
+        if (recipe != null)
+        {
+            // create one Ingridient
+            recipe.Ingredients = new List<Ingredient>();
+            recipe.Ingredients.Add(new Ingredient
+            {
+                Name = "Default ingridient",
+                Amount = "1",
+                Units = "",
+                RecipeId = recipe.Id
+            });
+            recipe.Servings = int.Parse((updateServings ?? "0"));
+            UpdateRecipe = recipe;
+        }
+    }
+
+    private async Task UpdateRecipeData()
+    {
+        await service.UpdateRecipeAsync(UpdateRecipe);
+        await RefreshRecipes();
+    }
+
+    private async Task DeleteRecipe(Recipe recipe)
+    {
+        await service.DeleteRecipeAsync(recipe);
+        await RefreshRecipes();
     }
 }
