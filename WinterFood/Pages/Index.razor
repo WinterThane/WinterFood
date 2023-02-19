@@ -6,7 +6,7 @@
 <PageTitle>Index</PageTitle>
 
 <div class="container">
-    <h1>Recipes</h1>
+    <h1>Winter Recipes</h1>
     <ul>
         @if (Recipes.Count == 0)
         {
@@ -18,7 +18,7 @@
             {
                 <li @onclick="(() => SetRecipeForUpdate(recipe))">@recipe.Name</li>
                 <li>@recipe.Description</li>
-                <li><button class="btn btn-danger" @onclick="(() => DeleteRecipe(recipe))">Delete!</button></li>
+                <li><Blazorise.Button Color="Color.Danger" Size="Size.Small" @onclick="(() => DeleteRecipe(recipe))">Delete!</Blazorise.Button></li>
             }
         }    
     </ul>
@@ -54,7 +54,7 @@
             <label for="cookTime">Cook Time</label>
             <input type="text" class="form-control" id="cookTime" @bind="@NewRecipe.CookTime" />
         </div>
-        <button class="btn btn-primary" @onclick="AddRecipe">Add</button>
+        <Blazorise.Button Color="Color.Success" Size="Size.Small" @onclick="AddRecipe">Add new Recipe</Blazorise.Button>
     </EditForm>
 </div>
 
@@ -89,7 +89,7 @@
             <label for="cookTime">Cook Time</label>
             <InputText class="form-control" id="cookTime" @bind-Value="UpdateRecipe.CookTime" />
         </div>
-        <button class="btn btn-primary" @onclick="UpdateRecipeData">Update</button>
+        <Blazorise.Button Color="Color.Warning" Size="Size.Small" @onclick="UpdateRecipeData">Update Recipe</Blazorise.Button>
     </EditForm>
 </div>
 

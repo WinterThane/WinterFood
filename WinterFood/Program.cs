@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using WinterFood.Data;
+using Blazorise;
+using Blazorise.Bootstrap;
+using Blazorise.Icons.FontAwesome;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,13 @@ builder.Services.AddSingleton<WeatherForecastService>();
 
 builder.Services.AddDbContext<RecipeDbContext>(options => options.UseSqlite("Data Source = Recipes.db"));
 builder.Services.AddScoped<RecipeService>();
+
+builder.Services.AddBlazorise(options =>
+{
+    options.Immediate = true;
+})
+    .AddBootstrapProviders()
+    .AddFontAwesomeIcons();
 
 var app = builder.Build();
 
