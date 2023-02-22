@@ -3,6 +3,13 @@
 @using WinterFood.Models
 @using Blazorise
 @inject RecipeService service
+@inject NavigationManager Navigation
+
+<style>
+    .mr-2 {
+        margin-right: 30px;
+    }
+</style>
 
 <PageTitle>Index</PageTitle>
 
@@ -11,7 +18,7 @@
 
     @foreach (var recipe in Recipes)
     {
-        <Card style="width: 500px;">
+        <Card>
             <CardHeader>
                 <Blazorise.CardTitle>
                     <Row>
@@ -19,7 +26,9 @@
                             <b>@recipe.Name</b>
                         </Column>
                             <Column ColumnSize="ColumnSize.Is2">
-                            <Blazorise.Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.Edit" IconSize="IconSize.Large" @onclick="(() => SetRecipeForUpdate(recipe))" />
+                            <Blazorise.Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.Plus" IconSize="IconSize.Large" @onclick="AddNewRecipe" class="mr-2" />
+                            <Blazorise.Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.Edit" IconSize="IconSize.Large" @onclick="() => { ShowUpdateRecipe = !ShowUpdateRecipe; SetRecipeForUpdate(recipe); }" class="mr-2" />
+                            <Blazorise.Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.Minus" IconSize="IconSize.Large" @onclick="(() => DeleteRecipe(recipe))"  />
                         </Column>
                     </Row>
                 </Blazorise.CardTitle>
@@ -31,108 +40,54 @@
                 <CardText><b>Servings:</b> @recipe.Servings</CardText>
                 <CardText><b>Prep Time:</b> @recipe.PrepTime</CardText>
                 <CardText><b>Cook Time:</b> @recipe.CookTime</CardText>
-                <CardText><b>Ingredients:</b></CardText>
-                <Blazorise.Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.MinusCircle" IconSize="IconSize.Large" @onclick="(() => DeleteRecipe(recipe))" />
+                <CardText><b>Ingredients:</b></CardText>             
             </CardBody>
         </Card>
+        <br />              
     }
-
-    <Blazorise.Button Color="Color.Primary" Clicked="@ShowModal">Show Modal</Blazorise.Button>
-
-    <Blazorise.Modal @ref="modalRef" Closing="@OnModalClosing">
-        <Blazorise.ModalContent Centered>
-            <ModalHeader>
-                <ModalTitle>Delete the recipe?</ModalTitle>
-            </ModalHeader>
-            <ModalBody>
-                Do you want to delete the recipe?
-            </ModalBody>
-            <ModalFooter>
-                <Blazorise.Button Color="Color.Danger" Clicked="@CloseModal">Delete!</Blazorise.Button>
-                <Blazorise.Button Color="Color.Warning" Clicked="@CloseModal">Cancel</Blazorise.Button>
-            </ModalFooter>
-        </Blazorise.ModalContent>
-    </Blazorise.Modal>
-</div>
-
-<div class="container">
-    <h1>Add new recipe</h1>
-    <EditForm Model="@NewRecipe">
-        <div class="form-group">
-            <label for="name">Name</label>
-            <input type="text" class="form-control" id="name" @bind="@NewRecipe.Name" />
-        </div>
-        <div class="form-group">
-            <label for="description">Description</label>
-            <input type="text" class="form-control" id="description" @bind="@NewRecipe.Description" />
-        </div>
-        <div class="form-group">
-            <label for="instructions">Instructions</label>
-            <input type="text" class="form-control" id="instructions" @bind="@NewRecipe.Instructions" />
-        </div>
-        <div class="form-group">
-            <label for="image">Image</label>
-            <input type="text" class="form-control" id="image" @bind="@NewRecipe.ImageUrl" />
-        </div>
-        <div class="form-group">
-            <label for="servings">Servings</label>
-            <input type="text" class="form-control" id="servings" @bind="@NewRecipe.Servings" />
-        </div>
-        <div class="form-group">
-            <label for="prepTime">Prep Time</label>
-            <input type="text" class="form-control" id="prepTime" @bind="@NewRecipe.PrepTime" />
-        </div>
-        <div class="form-group">
-            <label for="cookTime">Cook Time</label>
-            <input type="text" class="form-control" id="cookTime" @bind="@NewRecipe.CookTime" />
-        </div>
-        <Blazorise.Button Color="Color.Success" Size="Size.Small" @onclick="AddRecipe">Add new Recipe</Blazorise.Button>
-    </EditForm>
-</div>
-
-<div class="container">
-    <h1>Update recipe</h1>
-    <EditForm Model="@UpdateRecipe">
-        <div class="form-group">
-            <label for="name">Name</label>
-            <InputText class="form-control" id="name" @bind-Value="UpdateRecipe.Name" />
-        </div>
-        <div class="form-group">
-            <label for="description">Description</label>
-            <InputText class="form-control" id="description" @bind-Value="UpdateRecipe.Description" />
-        </div>
-        <div class="form-group">
-            <label for="instructions">Instructions</label>
-            <InputText class="form-control" id="instructions" @bind-Value="UpdateRecipe.Instructions" />
-        </div>
-        <div class="form-group">
-            <label for="image">Image</label>
-            <InputText class="form-control" id="image" @bind-Value="UpdateRecipe.ImageUrl" />
-        </div>
-        <div class="form-group">
-            <label for="servings">Servings</label>
-            <InputText class="form-control" id="servings" @bind-Value="UpdateRecipe.Servings" />
-        </div>
-        <div class="form-group">
-            <label for="prepTime">Prep Time</label>
-            <InputText class="form-control" id="prepTime" @bind-Value="UpdateRecipe.PrepTime" />
-        </div>
-        <div class="form-group">
-            <label for="cookTime">Cook Time</label>
-            <InputText class="form-control" id="cookTime" @bind-Value="UpdateRecipe.CookTime" />
-        </div>
-        <Blazorise.Button Color="Color.Warning" Size="Size.Small" @onclick="UpdateRecipeData">Update Recipe</Blazorise.Button>
-    </EditForm>
+    @if (ShowUpdateRecipe)
+        {
+            <h3>Update recipe</h3>
+            <EditForm Model="@UpdateRecipe">
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <InputText class="form-control" id="name" @bind-Value="UpdateRecipe.Name" />
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <InputText class="form-control" id="description" @bind-Value="UpdateRecipe.Description" />
+                </div>
+                <div class="form-group">
+                    <label for="instructions">Instructions</label>
+                    <InputText class="form-control" id="instructions" @bind-Value="UpdateRecipe.Instructions" />
+                </div>
+                <div class="form-group">
+                    <label for="image">Image</label>
+                    <InputText class="form-control" id="image" @bind-Value="UpdateRecipe.ImageUrl" />
+                </div>
+                <div class="form-group">
+                    <label for="servings">Servings</label>
+                    <InputText class="form-control" id="servings" @bind-Value="UpdateRecipe.Servings" />
+                </div>
+                <div class="form-group">
+                    <label for="prepTime">Prep Time</label>
+                    <InputText class="form-control" id="prepTime" @bind-Value="UpdateRecipe.PrepTime" />
+                </div>
+                <div class="form-group">
+                    <label for="cookTime">Cook Time</label>
+                    <InputText class="form-control" id="cookTime" @bind-Value="UpdateRecipe.CookTime" />
+                </div>
+                <Blazorise.Button Color="Color.Warning" Size="Size.Small" @onclick="UpdateRecipeData">Update Recipe</Blazorise.Button>
+            </EditForm>
+        } 
 </div>
 
 @code {
     // list of recipes
     List<Recipe> Recipes = new List<Recipe>();
-    // add new recipe
-    public Recipe NewRecipe { get; set; } = new Recipe();
     // update recipe
     Recipe UpdateRecipe = new Recipe();
-    //private string? updateServings;
+    bool ShowUpdateRecipe = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -145,10 +100,9 @@
         Recipes = await service.GetRecipesAsync();
     }
 
-    private async Task AddRecipe()
+    private void AddNewRecipe()
     {
-        await service.AddRecipeAsync(NewRecipe);
-        await RefreshRecipes();
+        Navigation.NavigateTo("/AddRecipe");
     }
 
     private void SetRecipeForUpdate(Recipe recipe)
@@ -172,6 +126,7 @@
     {
         await service.UpdateRecipeAsync(UpdateRecipe);
         UpdateRecipe = new Recipe();
+        ShowUpdateRecipe = false;
         await RefreshRecipes();
     }
 
@@ -179,35 +134,5 @@
     {
         await service.DeleteRecipeAsync(recipe);
         await RefreshRecipes();
-    }
-
-    // MODAL
-    private Blazorise.Modal modalRef;
-    private bool cancelClose;
-
-    private Task ShowModal()
-    {
-        return modalRef.Show();
-    }
-
-    private Task CloseModal()
-    {
-        cancelClose = false;
-
-        return modalRef.Hide();
-    }
-
-    private Task TryCloseModal()
-    {
-        cancelClose = true;
-
-        return modalRef.Hide();
-    }
-
-    private Task OnModalClosing(ModalClosingEventArgs e)
-    {
-        // just set Cancel to prevent modal from closing
-        e.Cancel = cancelClose || e.CloseReason != CloseReason.UserClosing;
-        return Task.CompletedTask;
     }
 }
