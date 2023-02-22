@@ -31,7 +31,7 @@ namespace WinterFood.Data
                     "Add the beans, tomato sauce, tomato paste, chili powder, cumin, oregano, salt, pepper, and water. " +
                     "Simmer for 30 minutes, stirring occasionally.",
                     ImageUrl = "https://www.example.com/spaghetti-bolognese.jpg",
-                    Servings = 4,
+                    Servings = "2",
                     PrepTime = "10 minutes",
                     CookTime = "30 minutes"
                 });

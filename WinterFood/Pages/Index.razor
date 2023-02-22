@@ -1,28 +1,60 @@
 ﻿@page "/"
 @using WinterFood.Data
 @using WinterFood.Models
+@using Blazorise
 @inject RecipeService service
 
 <PageTitle>Index</PageTitle>
 
 <div class="container">
     <h1>Winter Recipes</h1>
-    <ul>
-        @if (Recipes.Count == 0)
-        {
-            <li>No recipes found.</li>
-        }
-        else
-        {
-            @foreach (var recipe in Recipes)
-            {
-                <li @onclick="(() => SetRecipeForUpdate(recipe))">@recipe.Name</li>
-                <li>@recipe.Description</li>
-                <li><Blazorise.Button Color="Color.Danger" Size="Size.Small" @onclick="(() => DeleteRecipe(recipe))">Delete!</Blazorise.Button></li>
-            }
-        }    
-    </ul>
+
+    @foreach (var recipe in Recipes)
+    {
+        <Card style="width: 500px;">
+            <CardHeader>
+                <Blazorise.CardTitle>
+                    <Row>
+                        <Column ColumnSize="ColumnSize.Is10">
+                            <b>@recipe.Name</b>
+                        </Column>
+                            <Column ColumnSize="ColumnSize.Is2">
+                            <Blazorise.Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.Edit" IconSize="IconSize.Large" @onclick="(() => SetRecipeForUpdate(recipe))" />
+                        </Column>
+                    </Row>
+                </Blazorise.CardTitle>
+            </CardHeader>
+            <CardBody>
+                <CardText>@recipe.Description</CardText>
+                <CardImage src="@recipe.ImageUrl" alt="@recipe.Name" />
+                <CardText>@recipe.Instructions</CardText>
+                <CardText><b>Servings:</b> @recipe.Servings</CardText>
+                <CardText><b>Prep Time:</b> @recipe.PrepTime</CardText>
+                <CardText><b>Cook Time:</b> @recipe.CookTime</CardText>
+                <CardText><b>Ingredients:</b></CardText>
+                <Blazorise.Icon Name="Blazorise.Icons.FontAwesome.FontAwesomeIcons.MinusCircle" IconSize="IconSize.Large" @onclick="(() => DeleteRecipe(recipe))" />
+            </CardBody>
+        </Card>
+    }
+
+    <Blazorise.Button Color="Color.Primary" Clicked="@ShowModal">Show Modal</Blazorise.Button>
+
+    <Blazorise.Modal @ref="modalRef" Closing="@OnModalClosing">
+        <Blazorise.ModalContent Centered>
+            <ModalHeader>
+                <ModalTitle>Delete the recipe?</ModalTitle>
+            </ModalHeader>
+            <ModalBody>
+                Do you want to delete the recipe?
+            </ModalBody>
+            <ModalFooter>
+                <Blazorise.Button Color="Color.Danger" Clicked="@CloseModal">Delete!</Blazorise.Button>
+                <Blazorise.Button Color="Color.Warning" Clicked="@CloseModal">Cancel</Blazorise.Button>
+            </ModalFooter>
+        </Blazorise.ModalContent>
+    </Blazorise.Modal>
 </div>
+
 <div class="container">
     <h1>Add new recipe</h1>
     <EditForm Model="@NewRecipe">
@@ -79,7 +111,7 @@
         </div>
         <div class="form-group">
             <label for="servings">Servings</label>
-            <InputText class="form-control" id="servings" @bind-Value="updateServings" />
+            <InputText class="form-control" id="servings" @bind-Value="UpdateRecipe.Servings" />
         </div>
         <div class="form-group">
             <label for="prepTime">Prep Time</label>
@@ -100,7 +132,7 @@
     public Recipe NewRecipe { get; set; } = new Recipe();
     // update recipe
     Recipe UpdateRecipe = new Recipe();
-    private string? updateServings;
+    //private string? updateServings;
 
     protected override async Task OnInitializedAsync()
     {
@@ -132,7 +164,6 @@
                 Units = "",
                 RecipeId = recipe.Id
             });
-            recipe.Servings = int.Parse((updateServings ?? "0"));
             UpdateRecipe = recipe;
         }
     }
@@ -140,6 +171,7 @@
     private async Task UpdateRecipeData()
     {
         await service.UpdateRecipeAsync(UpdateRecipe);
+        UpdateRecipe = new Recipe();
         await RefreshRecipes();
     }
 
@@ -147,5 +179,35 @@
     {
         await service.DeleteRecipeAsync(recipe);
         await RefreshRecipes();
+    }
+
+    // MODAL
+    private Blazorise.Modal modalRef;
+    private bool cancelClose;
+
+    private Task ShowModal()
+    {
+        return modalRef.Show();
+    }
+
+    private Task CloseModal()
+    {
+        cancelClose = false;
+
+        return modalRef.Hide();
+    }
+
+    private Task TryCloseModal()
+    {
+        cancelClose = true;
+
+        return modalRef.Hide();
+    }
+
+    private Task OnModalClosing(ModalClosingEventArgs e)
+    {
+        // just set Cancel to prevent modal from closing
+        e.Cancel = cancelClose || e.CloseReason != CloseReason.UserClosing;
+        return Task.CompletedTask;
     }
 }

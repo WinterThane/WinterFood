@@ -8,7 +8,7 @@
         public List<Ingredient> Ingredients { get; set; }
         public string Instructions { get; set; }
         public string ImageUrl { get; set; }
-        public int Servings { get; set; }
+        public string Servings { get; set; }
         public string PrepTime { get; set; }
         public string CookTime { get; set; }
     }
